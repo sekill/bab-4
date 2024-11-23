@@ -1,0 +1,490 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class CartItem {
+  final int id;
+  final String name;
+  final double price;
+  int quantity;
+  final String imageUrl;
+
+  CartItem({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.quantity,
+    required this.imageUrl,
+  });
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Shopping App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const ProductListPage(),
+    );
+  }
+}
+
+class ProductListPage extends StatefulWidget {
+  const ProductListPage({super.key});
+
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+  final List<CartItem> products = [
+    CartItem(
+      id: 1,
+      name: 'Tas Ransel',
+      price: 150000,
+      quantity: 1,
+      imageUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsWBxfld2bokxp8Oy73OpiJwTc7beNN6_y4A&s.jpg',
+    ),
+    CartItem(
+      id: 2,
+      name: 'Jam Tangan',
+      price: 300000,
+      quantity: 1,
+      imageUrl:
+          'https://img.id.my-best.com/product_images/2407ef2efe65e65c89bc22477788bdf0.png?ixlib=rails-4.3.1&q=70&lossless=0&w=800&h=800&fit=clip&s=7e8464835e056db354003d2290faa7f4.jpg',
+    ),
+    CartItem(
+      id: 3,
+      name: 'Sepatu Sneakers',
+      price: 450000,
+      quantity: 1,
+      imageUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSuZOs7rfLOixKQzcF2UgjNGQqTmdvhSUymQ&s.jpg',
+    ),
+    CartItem(
+      id: 4,
+      name: 'Sepatu',
+      price: 600000,
+      quantity: 1,
+      imageUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDEK1V8vdrhclYdcFqJ07PuLC5z9VtmiqKFQ&s.jpg',
+    ),
+  ];
+
+  List<CartItem> cartItems = [];
+
+  void _addToCart(CartItem product) {
+    setState(() {
+      final existingIndex =
+          cartItems.indexWhere((item) => item.id == product.id);
+      if (existingIndex != -1) {
+        cartItems[existingIndex].quantity++;
+      } else {
+        cartItems.add(
+          CartItem(
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: 1,
+            imageUrl: product.imageUrl,
+          ),
+        );
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Produk ditambahkan ke keranjang'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Produk'),
+        actions: [
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.shopping_cart),
+                if (cartItems.isNotEmpty)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${cartItems.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShoppingCartPage(cartItems: cartItems),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                    ),
+                    child: Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.image,
+                          size: 50,
+                          color: Colors.grey,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Rp ${product.price.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _addToCart(product),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Add to Cart'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ShoppingCartPage extends StatefulWidget {
+  final List<CartItem> cartItems;
+
+  const ShoppingCartPage({
+    super.key,
+    required this.cartItems,
+  });
+
+  @override
+  State<ShoppingCartPage> createState() => _ShoppingCartPageState();
+}
+
+class _ShoppingCartPageState extends State<ShoppingCartPage> {
+  final double discount = 25000;
+
+  void _updateQuantity(int id, bool increment) {
+    setState(() {
+      final index = widget.cartItems.indexWhere((item) => item.id == id);
+      if (index != -1) {
+        if (increment) {
+          widget.cartItems[index].quantity++;
+        } else if (widget.cartItems[index].quantity > 1) {
+          widget.cartItems[index].quantity--;
+        }
+      }
+    });
+  }
+
+  void _removeItem(int id) {
+    setState(() {
+      widget.cartItems.removeWhere((item) => item.id == id);
+    });
+  }
+
+  double _getTotal() {
+    return widget.cartItems
+        .fold(0, (sum, item) => sum + (item.price * item.quantity));
+  }
+
+  void _showOrderDetails() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rincian Belanja'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ...widget.cartItems.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      '${item.name}: ${item.quantity}x = Rp ${(item.price * item.quantity).toStringAsFixed(0)}',
+                    ),
+                  )),
+              const Divider(),
+              Text('Subtotal: Rp ${_getTotal().toStringAsFixed(0)}'),
+              Text('Diskon: Rp ${discount.toStringAsFixed(0)}'),
+              const SizedBox(height: 8),
+              Text(
+                'Total: Rp ${(_getTotal() - discount).toStringAsFixed(0)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _checkout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Checkout'),
+        content: const Text('Proses checkout berhasil!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                widget.cartItems.clear();
+              });
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Keranjang'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: widget.cartItems.isEmpty
+                ? const Center(
+                    child: Text('Keranjang kosong'),
+                  )
+                : ListView.builder(
+                    itemCount: widget.cartItems.length,
+                    padding: const EdgeInsets.all(16),
+                    itemBuilder: (context, index) {
+                      final item = widget.cartItems[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Image.network(
+                                  item.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.image);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Rp ${item.price}',
+                                      style: TextStyle(
+                                        color: Colors.blue[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () =>
+                                        _updateQuantity(item.id, false),
+                                    icon: const Icon(Icons.remove),
+                                  ),
+                                  Text('${item.quantity}'),
+                                  IconButton(
+                                    onPressed: () =>
+                                        _updateQuantity(item.id, true),
+                                    icon: const Icon(Icons.add),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _removeItem(item.id),
+                                    icon: const Icon(Icons.delete),
+                                    color: Colors.red,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          if (widget.cartItems.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, -1),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Discount:'),
+                      Text('Rp ${discount.toStringAsFixed(0)}'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Rp ${(_getTotal() - discount).toStringAsFixed(0)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _showOrderDetails,
+                          icon: const Icon(Icons.receipt_long),
+                          label: const Text('Rincian'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _checkout,
+                          icon: const Icon(Icons.shopping_cart_checkout),
+                          label: const Text('Checkout'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
